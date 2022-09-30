@@ -26,7 +26,7 @@
       }
   },
   "packages": {
-    "framework-wizio-pico": {
+    "framework-wizio-TEST": {
         "type": "framework",
         "version": "https://github.com/Wiz-IO/framework-wizio-TEST.git"
     },
