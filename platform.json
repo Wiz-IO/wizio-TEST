@@ -1,0 +1,41 @@
+{
+  "name": "wizio-TEST",
+  "title": "WizIO - TEST",
+  "description": "TEST Development platform for experiments",
+  "homepage": "http://www.wizio.eu/",
+  "license": "Apache-2.0",
+  "engines": {
+    "platformio": "^5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wiz-IO/wizio-TEST.git"
+  },
+  "version": "1.1.1",
+  "packageRepositories": [
+    "http://dl.platformio.org/packages/manifest.json"
+  ],
+  "frameworks": {
+      "sdk": {
+        "package": "framework-wizio-TEST",
+        "script": "builder/frameworks/sdk.py",
+        "optional": true
+      },    
+      "arduino": {
+        "package": "framework-wizio-TEST",
+        "script": "builder/frameworks/arduino.py"
+      }
+  },
+  "packages": {
+    "framework-wizio-pico": {
+        "type": "framework",
+        "version": "https://github.com/Wiz-IO/framework-wizio-TEST.git"
+    },
+    "toolchain-gccarmnoneeabi": {
+        "owner": "platformio",
+        "type": "toolchain",
+        "version": "~1.70201.0"
+    }
+
+  }
+}
