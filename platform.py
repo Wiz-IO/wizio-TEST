@@ -3,7 +3,6 @@
 import os, sys, time, pathlib, json
 from os.path import join, dirname, exists
 from platformio.managers.platform import PlatformBase
-#from builder.frameworks.install import dev_install
 
 class WiziotestPlatform(PlatformBase):
     def is_embedded(self):
@@ -22,12 +21,11 @@ class WiziotestPlatform(PlatformBase):
     def on_installed(self):
         print('[---] on_installed( + )')   
 
-        p = dirname( __file__ )
-        if exists( join( p, 'builder', 'frameworks', 'install.py' ) ):
+        p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' )
+        print('[---] on_installed( %s )' % p)
+        if exists( p ):
             print('[---] on_installed( EXIST )')
-            sys.path.insert(0, './builder/frameworks')
-            from install import dev_install
-            dev_install() 
+            __import__(p).dev_install()
         else:
             print('[---] on_installed( NOT EXIST )')
         print('[---] on_installed( - )') 
