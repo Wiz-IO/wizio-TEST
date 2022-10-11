@@ -1,6 +1,6 @@
 # LICENSE
 
-import os, sys, time, pathlib
+import os, sys, time, pathlib, shutil
 from os.path import join
 from shutil import copyfile, rmtree
 from platformio import proc
@@ -27,7 +27,7 @@ def MKDIR(path, name):
         try:
             os,os.mkdir(dir)
         except OSError:
-            ERROR ("[ERROR] Creation of the directory %s failed" % dir)
+            ERROR ("Creation of the directory %s failed" % dir)
     return dir
 
 ###############################################################################
@@ -39,7 +39,7 @@ def get_ver(i, k):
         if x > -1 and y > -1:
             ver[k] = i[x+1:y]
 
-def get_version( pico_dir ):
+def get_pico_sdk_version( pico_dir ):
     global version
     f = open( join( pico_dir, 'pico_sdk_version.cmake' ) )
     t = f.read()
@@ -77,6 +77,7 @@ extern int __attribute__((weak)) _write(int handle, char *buffer, int length) { 
     f.close()
 
 def create_folder_inc(pico_dir, platformio_dir):
+    global version
     p = join( platformio_dir, 'inc' )
     if os.path.exists( p ): 
         return
@@ -97,6 +98,10 @@ def create_folder_inc(pico_dir, platformio_dir):
                     copyfile( src_file, dst_file ) 
                 else: 
                     ERROR('FILE EXISTS: %s' % join(root, file))
+
+        f = open( join(platformio_dir, 'PlatformIO'), 'w' )
+        f.write(version)
+        f.close()
 
 ###############################################################################
 
@@ -146,16 +151,26 @@ def create_version( pico_dir ): # ...\pico-sdk\src\rp2_common\pico_platform\incl
 ###############################################################################
 
 def create_patch( pico_dir ):
-    get_version(pico_dir)
+    get_pico_sdk_version( pico_dir )
+
+    platformio_dir = join( pico_dir, 'platformio' )
+
+    version_file = join(platformio_dir, 'PlatformIO') 
+    if os.path.exists( version_file ): 
+        f = open( version_file, 'r' ); v = f.read(); f.close();
+        if v != version:
+            print('Update current version < %s > to < %s >' % (v, version) )
+            shutil.rmtree(platformio_dir, ignore_errors=False)
+            time.sleep(1)
+
+    if not os.path.exists( platformio_dir ): 
+        MKDIR( pico_dir, 'platformio' )  
+
     create_config_autogen(pico_dir)   
     create_version(pico_dir)    
 
-    platformio_dir = join( pico_dir, 'platformio' )
-    if not os.path.exists( platformio_dir ): 
-        MKDIR( pico_dir, 'platformio' )
-
-    create_folder_inc(pico_dir, platformio_dir) 
     create_folder_gcc(platformio_dir) 
+    create_folder_inc(pico_dir, platformio_dir)  
 
 def dev_install( framework_dir, q = 0 ):
     global version    
