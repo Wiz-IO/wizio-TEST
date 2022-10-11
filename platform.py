@@ -25,7 +25,7 @@ class WiziotestPlatform(PlatformBase):
         p = dirname( __file__ )
         if exists( join( p, 'builder', 'frameworks', 'install.py' ) ):
             print('[---] on_installed( EXIST )')
-            sys.path.insert(0, './lib/builder/frameworks')
+            sys.path.insert(0, './builder/frameworks')
             from install import dev_install
             dev_install() 
         else:
