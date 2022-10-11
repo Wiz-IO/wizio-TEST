@@ -11,6 +11,7 @@ def dev_install():
 
     if os.path.exists( 'C:/Users/1124/.platformio/packages/framework-wizio-TEST' ):  
         print('[---] do install( EXIST )')
+        print( globals() )
         return 
     print('[---] do install( NOT EXIST )')
 
