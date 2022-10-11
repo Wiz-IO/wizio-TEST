@@ -23,7 +23,8 @@ class WiziotestPlatform(PlatformBase):
         p = dirname( __file__ )
         if exists( join( p, 'builder', 'frameworks', 'install.py' ) ):
             print('[---] on_installed( EXIST )')
-            #dev_install() 
+            from builder.frameworks.install import dev_install
+            dev_install() 
         else:
             print('[---] on_installed( NOT EXIST )')
         print('[---] on_installed( - )') 
