@@ -15,11 +15,11 @@
   "packageRepositories": [
     "http://dl.platformio.org/packages/manifest.json"
   ],
-  "frameworks": {
-      "sdk": {
+  "frameworks": {  
+      "pico-sdk": {
         "package": "framework-wizio-TEST",
-        "script": "builder/frameworks/sdk.py"
-      },    
+        "script": "builder/frameworks/pico-sdk.py"
+      },        
       "arduino": {
         "package": "framework-wizio-TEST",
         "script": "builder/frameworks/arduino.py"
@@ -28,7 +28,8 @@
   "packages": {
     "framework-wizio-TEST": {
         "type": "framework",
-        "version": "https://github.com/Wiz-IO/framework-wizio-TEST.git"
+        "version": "https://github.com/Wiz-IO/framework-wizio-TEST.git",
+        "Xversion": "1.0.0"
     },
     "toolchain-gccarmnoneeabi": {
         "owner": "platformio",
