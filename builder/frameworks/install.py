@@ -4,55 +4,62 @@ import os, sys, time, pathlib, json
 from os.path import join
 from shutil import copyfile, rmtree
 from platformio import proc
-from pico_common import mk_dir
 
 version = '1234'
 
+def INFO(str): 
+    print('[INSTALL]', str) 
+
+def DBG(str):
+    import inspect
+    print( '[DBG] { %s() } %s' % (inspect.stack()[1][3], str))
+
+def ERROR(txt):
+    print('❖ ERROR ❖ [INSTALL]', txt)
+    exit(-1)
+
+###############################################################################
 
 def create_patch(pico_dir):
-    print('create_patch()')
+    DBG('create_patch()')
 
 def dev_install( framework_dir ):
     global version    
-    print('[---] do install( + )')
 
-    if not os.path.exists( 'C:/Users/1124/.platformio/packages/framework-wizio-TEST' ):  
+    if not os.path.exists( framework_dir ):  
         print('[---] do install( NOT EXIST )')
         return 
 
     pico = join( framework_dir, 'pico-sdk' )
-    print('[INSTALL]', pico)
+    DBG('pico: %s' % pico)
 
     if os.path.exists( pico ):  
         create_patch( pico ) # if manual install
         return 
 
     ## CLONE BEGIN ####################
-    
-    url  = 'https://github.com/raspberrypi/pico-sdk'
+
     start_time = time.time()
-    print('[INSTALL] Clone pico-sdk ( less than a minute, Plese wait )')
-    args = [ 'git', 'clone', url, pico ]
+    INFO('Clone pico-sdk ( less than a minute, Plese wait )')
+    args = [ 'git', 'clone', 'https://github.com/raspberrypi/pico-sdk', pico ]
     res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin )
     
     if 0 == res['returncode']: 
-        print('[INSTALL] Init submodules ...')
+        INFO('Init submodules ...')
         args = ['git', 'submodule', 'init']
         res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico )
 
         if 0 == res['returncode']: 
-            print('[INSTALL] Update submodules ...')
+            INFO('Update submodules ...')
             args = ['git', 'submodule', 'update', pico  ]
             res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico )
            
     if 0 != res['returncode']:  
         rmtree(pico, ignore_errors=False)
-        print('[ERROR][INSTALL] %s', res)
-        exit(-1)
+        ERROR(res)
 
     ## CLONE END   ####################
 
     create_patch(pico) 
-    print('[INSTALL] PICO-SDK Version: %s' % version )
-    print('[INSTALL] DONE ( %s seconds )' % int( time.time() - start_time ) )
-    print('[---] do install( - )')
+    INFO('PICO-SDK Version: %s' % version )
+    INFO('DONE ( %s seconds )' % int( time.time() - start_time ) )
