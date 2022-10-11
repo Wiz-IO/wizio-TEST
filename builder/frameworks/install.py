@@ -1,63 +1,61 @@
 # LICENSE
 
 import os, sys, time, pathlib, shutil
+from os.path import join, exists
 from shutil import copyfile, rmtree
 from platformio import proc
 
-version = '0.0.0'
+VER = '0.0.0'
 ver = {'PICO_SDK_VERSION_MAJOR':'0', 'PICO_SDK_VERSION_MINOR':'0', 'PICO_SDK_VERSION_REVISION':'0' }
 
 def INFO(str): 
     print('[INSTALL]', str)
 
-def DBG(str):
-    import inspect
-    print( '[DBG] { %s() } %s' % (inspect.stack()[1][3], str))
-
 def ERROR(txt):
     print('❖ ERROR ❖ [INSTALL]', txt)
     exit(-1)
 
-def MKDIR(path, name):
-    dir = os.path.join(path, name)
-    if False == os.path.isdir( dir ):
-        try:
-            os,os.mkdir(dir)
-        except OSError:
-            ERROR ("Creation of the directory %s failed" % dir)
-    return dir
+def MKDIR(dir):
+    if not exists( dir ): 
+        if not os.path.isdir( dir ):
+            try: 
+                os.mkdir(dir)
+                return False # done
+            except OSError:
+                ERROR ("Creation of the directory %s failed" % dir)
+        else:
+            ERROR ("Dir is not dir %s" % dir)
+    return True # exists
 
 ###############################################################################
 
-def get_ver(i, k):
-    if k in i: 
-        x = i.find(' ')
-        y = i.find(')')
+def get_ver(item, key):
+    if key in item: 
+        x = item.find(' ')
+        y = item.find(')')
         if x > -1 and y > -1:
-            ver[k] = i[x+1:y]
+            ver[key] = item[ x + 1 : y]
 
 def get_pico_sdk_version( pico_dir ):
-    global version
-    f = open( os.path.join( pico_dir, 'pico_sdk_version.cmake' ) )
-    t = f.read()
+    global VER
+    f = open( join( pico_dir, 'pico_sdk_version.cmake' ) )
+    text = f.read()
     f.close()    
-    t = t.strip().split('\n')
-    for i in t:
-        if False == i.startswith('set(') or i.find(')') == -1 or i.find('$') > -1: continue
-        get_ver(i, 'PICO_SDK_VERSION_MAJOR')
-        get_ver(i, 'PICO_SDK_VERSION_MINOR')
-        get_ver(i, 'PICO_SDK_VERSION_REVISION')
-    version = '%s.%s.%s' % ( ver['PICO_SDK_VERSION_MAJOR'], ver['PICO_SDK_VERSION_MINOR'], ver['PICO_SDK_VERSION_REVISION'] ) 
-    return  'PICO-SDK      : %s' % version     
+    text = text.strip().split('\n')
+    for item in text:
+        if False == item.startswith('set(') or item.find(')') == -1 or item.find('$') > -1: continue
+        get_ver(item, 'PICO_SDK_VERSION_MAJOR')
+        get_ver(item, 'PICO_SDK_VERSION_MINOR')
+        get_ver(item, 'PICO_SDK_VERSION_REVISION')
+    VER = '%s.%s.%s' % ( ver['PICO_SDK_VERSION_MAJOR'], ver['PICO_SDK_VERSION_MINOR'], ver['PICO_SDK_VERSION_REVISION'] ) 
+    return VER     
 
 ###############################################################################
 
-def create_folder_gcc( pico_dir ):
-    p = os.path.join( pico_dir, 'gcc' )
-    if os.path.exists( p ): 
-        return
-    MKDIR( pico_dir, 'gcc' )
-    f = open( os.path.join( p, 'gcc-syscall.c' ), 'w' )
+def create_folder_gcc( platformio_dir ):
+    gcc_dir = join( platformio_dir, 'gcc' )
+    if MKDIR( gcc_dir ): return
+    f = open( join( gcc_dir, 'gcc-syscall.c' ), 'w' )
     f.write(
 '''
 #include <sys/stat.h>
@@ -71,52 +69,48 @@ extern int __attribute__((weak)) _write(int handle, char *buffer, int length) { 
     )
     f.close()
 
-def create_folder_inc(pico_dir, platformio_dir):
-    global version
-    p = os.path.join( platformio_dir, 'inc' )
-    if os.path.exists( p ): 
-        return
-    MKDIR( platformio_dir, 'inc' )
-    for root, dirs, files in os.walk( pico_dir ):
-        root = root.replace('\\', '/')
-        if '/lib' in root: continue
-        if '/host' in root: continue
+def create_folder_inc( pico_dir, platformio_dir ):
+    global VER
+    pico_src_dir = join( pico_dir, 'src' )
+    inc_dir = join( platformio_dir, 'inc' )
+    if MKDIR( inc_dir ): return
+    for root, dirs, files in os.walk( pico_src_dir ):
+        if 'host' in root: continue
         if 'include' not in root: continue       
-        name = root[ root.index('include') + 8:]
-        MKDIR( os.path.join( pico_dir, p), name )
+        name = root[ root.index('include') + 8:] # name after include
+        MKDIR( join( inc_dir, name ) )
         for file in files:
             ext = pathlib.Path(file).suffix
             if ext == '.h' or ext == '.S':
-                src_file = os.path.join(root, file)
-                dst_file = os.path.join(p, name, file)
-                if False == os.path.exists( dst_file ): 
-                    copyfile( src_file, dst_file ) 
+                src_file = join(root, file)
+                dst_file = join(inc_dir, name, file)
+                if False == exists( dst_file ): 
+                    copyfile( src_file, dst_file )
                 else: 
-                    ERROR('FILE EXISTS: %s' % os.path.join(root, file))
+                    ERROR('INCLUDE FILE EXISTS: %s' % dst_file)
 
-        f = open( os.path.join(platformio_dir, 'PlatformIO'), 'w' )
-        f.write(version)
+        f = open( join(platformio_dir, 'version'), 'w' )
+        f.write(VER)
         f.close()
 
 ###############################################################################
 
 # TODO check dst folder
 def create_config_autogen( pico_dir ):
-    path = os.path.join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'config_autogen.h' )
-    if os.path.exists( path ): 
-        return
-    f = open( path, 'w' ) 
-    f.write('// config autogen: PlatformIO')
-    f.close()
+    filename = join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'config_autogen.h' )
+    if not exists( filename ): 
+        f = open( filename, 'w' ) 
+        f.write('// config autogen: PlatformIO')
+        f.close()
 
 # TODO check dst folder
 def create_version( pico_dir ):
-    global version
-    path = os.path.join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'version.h')
-    if os.path.exists( path ): 
-        return
-    f = open( path, 'w' ) 
-    s = '''
+    global VER
+    filename = join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'version.h')
+    if not exists( filename ): 
+        f = open( filename, 'w' ) 
+        f.write(
+'''
 /*
  * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
  *
@@ -139,27 +133,25 @@ def create_version( pico_dir ):
 #define PICO_SDK_VERSION_STRING     "%s < PlatformIO >"
 
 #endif
-''' % ( ver['PICO_SDK_VERSION_MAJOR'], ver['PICO_SDK_VERSION_MINOR'], ver['PICO_SDK_VERSION_REVISION'],  version )    
-    f.write(s)
-    f.close()
+''' % ( ver['PICO_SDK_VERSION_MAJOR'], ver['PICO_SDK_VERSION_MINOR'], ver['PICO_SDK_VERSION_REVISION'],  VER ) )
+        f.close()
 
 ###############################################################################
 
 def create_patch( pico_dir ):
     get_pico_sdk_version( pico_dir )
 
-    platformio_dir = os.path.join( pico_dir, 'platformio' )
+    platformio_dir = join( pico_dir, 'platformio' )
 
-    version_file = os.path.join(platformio_dir, 'PlatformIO') 
-    if os.path.exists( version_file ): 
+    version_file = join(platformio_dir, 'version') 
+    if exists( version_file ): 
         f = open( version_file, 'r' ); v = f.read(); f.close();
-        if v != version:
-            print('Update current version < %s > to < %s >' % (v, version) )
+        if v != VER:
+            print('Update current version < %s > to < %s >' % (v, VER) )
             shutil.rmtree(platformio_dir, ignore_errors=False)
             time.sleep(1)
 
-    if not os.path.exists( platformio_dir ): 
-        MKDIR( pico_dir, 'platformio' )  
+    MKDIR( platformio_dir )  
 
     create_config_autogen(pico_dir)   
     create_version(pico_dir)    
@@ -168,41 +160,41 @@ def create_patch( pico_dir ):
     create_folder_inc(pico_dir, platformio_dir)  
 
 def dev_install( framework_dir ):
-    global version    
+    global VER    
 
-    if not os.path.exists( framework_dir ):  
+    if not exists( framework_dir ):  
         return 
 
-    pico = os.path.join( framework_dir, 'pico-sdk' )
+    pico_dir = join( framework_dir, 'pico-sdk' )
 
-    if os.path.exists( pico ):  
-        create_patch( pico ) # if manual install/update
+    if exists( pico_dir ):  
+        create_patch( pico_dir ) # if manual install/update
         return 
 
     ## CLONE BEGIN ##
 
     start_time = time.time()
     INFO('Clone pico-sdk ( less than a minute, Plese wait )')
-    args = [ 'git', 'clone', 'https://github.com/raspberrypi/pico-sdk', pico, '--quiet' ]
+    args = [ 'git', 'clone', 'https://github.com/raspberrypi/pico-sdk', pico_dir, '--quiet' ]
     res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin )
     
     if 0 == res['returncode']: 
         INFO('Init submodules ...')
         args = ['git', 'submodule', 'init' , '--quiet' ]
-        res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico )
+        res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico_dir )
 
         if 0 == res['returncode']: 
             INFO('Updating submodules ...')
-            args = ['git', 'submodule', 'update', pico, '--quiet' ]
-            res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico )
+            args = ['git', 'submodule', 'update', pico_dir, '--quiet' ]
+            res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico_dir )
            
     if 0 != res['returncode']:  
-        rmtree(pico, ignore_errors=False)
+        rmtree(pico_dir, ignore_errors=False)
         ERROR('Result:%d ... Please, try later' % res)
 
     ## CLONE END   ##
 
-    create_patch( pico ) 
+    create_patch( pico_dir ) 
 
-    INFO('PICO-SDK Version: %s' % version )
+    INFO('PICO-SDK Version: %s' % VER )
     INFO('DONE ( %s sec )' % int( time.time() - start_time ) ) # DONE ( 24 sec )
