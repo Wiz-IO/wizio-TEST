@@ -18,4 +18,4 @@ class WiziotestPlatform(PlatformBase):
     def on_installed(self):
         print('[---] on_installed(+)')   
         #dev_install() 
-        print('[---] on_installed(+)') 
+        print('[---] on_installed(-)') 
