@@ -1,3 +1,5 @@
+
+from os.path import join, dirname, exists
 from platformio.managers.platform import PlatformBase
 #from builder.frameworks.install import dev_install
 
@@ -16,6 +18,12 @@ class WiziotestPlatform(PlatformBase):
         return self.packages[name].get("type")
 
     def on_installed(self):
-        print('[---] on_installed(+)')   
-        #dev_install() 
-        print('[---] on_installed(-)') 
+        print('[---] on_installed( + )')   
+
+        p = dirname( __file__ )
+        if exists( join( p, 'builder', 'frameworks', 'install.py' ) ):
+            print('[---] on_installed( EXIST )')
+            #dev_install() 
+        else:
+            print('[---] on_installed( NOT EXIST )')
+        print('[---] on_installed( - )') 
