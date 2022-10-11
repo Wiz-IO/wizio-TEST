@@ -1,5 +1,5 @@
 from platformio.managers.platform import PlatformBase
-from builder.frameworks.install import dev_install
+#from builder.frameworks.install import dev_install
 
 class WiziotestPlatform(PlatformBase):
     def is_embedded(self):
@@ -17,5 +17,5 @@ class WiziotestPlatform(PlatformBase):
 
     def on_installed(self):
         print('[---] on_installed(+)')   
-        dev_install() 
+        #dev_install() 
         print('[---] on_installed(+)') 
