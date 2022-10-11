@@ -16,7 +16,7 @@ class WiziotestPlatform(PlatformBase):
         #print('[---] get_boards()')
         res = PlatformBase.get_boards(self, id_)
 
-        #self.on_installed()
+        self.on_installed()
 
         return res
 
