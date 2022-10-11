@@ -2,19 +2,24 @@
   "name": "WizIO - TEST Board",
   "url": "https://github.com/Wiz-IO",
   "vendor": "WizIO",  
-  "frameworks": [ "sdk", "arduino" ],
+  "frameworks": [ "pico-sdk", "arduino" ],
 
   "build": {
-    "core"      : "CORE",
-    "variant"   : "VARIANT",    
-    "f_cpu"     : "125000000L",
-    "mcu"       : "ARM"
+    "core"          : "RP2040",
+    "variant"       : "VARIANT-FOR_ARDUINO",    
+    "f_cpu"         : "125000000L",
+    "mcu"           : "ARM",
+    "REM_binary"    : "copy_to_ram",
+    "REM_address"   : "11223344",
+    "REM_WIFI"      : "FALSE",
+    "REM_BT"        : "FALSE"       
   },
 
   "debug": { },  
 
   "upload": {
     "maximum_ram_size" :  262144,
-    "maximum_size"     : 2097152        
+    "maximum_size"     : 2097152, 
+    "protocol"         : "uf2"        
   }
 }
