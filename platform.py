@@ -2,6 +2,7 @@
 
 import os, sys, time, pathlib, json
 from os.path import join, dirname, exists
+from importlib.machinery import SourceFileLoader
 from platformio.managers.platform import PlatformBase
 
 class WiziotestPlatform(PlatformBase):
@@ -12,6 +13,9 @@ class WiziotestPlatform(PlatformBase):
     def get_boards(self, id_=None):
         print('[---] get_boards()')
         res = PlatformBase.get_boards(self, id_)
+
+        #self.on_installed()
+
         return res
 
     def get_package_type(self, name):
@@ -20,13 +24,15 @@ class WiziotestPlatform(PlatformBase):
 
     def on_installed(self):
         print('[---] on_installed( + )')   
-
-        d = dirname( __file__ )
-        p = join( 'builder', 'frameworks', 'install.py' )#.replace("\\\\", "/")
-        print('[---] on_installed( %s )' % p)
+       
+        p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace("\\", "/")
         if exists( p ):
             print('[---] on_installed( EXIST )')
-            __import__(p).dev_install()
+            name = 'module_' +  str( abs( hash( p ) ) )
+            m = SourceFileLoader(name, p).load_module() 
+            m.dev_install()
         else:
             print('[---] on_installed( NOT EXIST )')
+
         print('[---] on_installed( - )') 
+ 
