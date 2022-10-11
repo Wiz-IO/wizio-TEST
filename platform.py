@@ -1,6 +1,5 @@
 # LICENSE
 
-import os, sys, time, pathlib, json
 from os.path import join, dirname, exists
 from importlib.machinery import SourceFileLoader
 from platformio.managers.platform import PlatformBase
@@ -25,9 +24,9 @@ class WiziotestPlatform(PlatformBase):
         return self.packages[name].get('type')
 
     def on_installed(self):     
-        p = os.path.join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace('\\', '/')
+        p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace('\\', '/')
         if exists( p ):
-            f_dir = os.path.join( self.config.get('platformio', 'core_dir'), 'packages', F_NAME ),
+            f_dir = join( self.config.get('platformio', 'core_dir'), 'packages', F_NAME ),
             name = 'module_' +  str( abs( hash( p ) ) )
             m = SourceFileLoader(name, p).load_module() 
             m.dev_install( f_dir[0], 1 )
