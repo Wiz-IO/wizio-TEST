@@ -14,22 +14,21 @@ class WiziotestPlatform(PlatformBase):
     def get_boards(self, id_=None):
         #print('[---] get_boards()')
         res = PlatformBase.get_boards(self, id_)
-
         self.on_installed() # TODO: REMOVE THIS !!!
-
         return res
 
     def get_package_type(self, name):
         #print('[---] get_package_type()', name)
         return self.packages[name].get('type')
 
-    def on_installed(self):     
+    def on_installed(self):  
+        #print('[---] on_installed()')   
         p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace('\\', '/')
         if exists( p ):
             f_dir = join( self.config.get('platformio', 'core_dir'), 'packages', F_NAME ),
             name = 'module_' +  str( abs( hash( p ) ) )
             m = SourceFileLoader(name, p).load_module() 
-            m.dev_install( f_dir[0], 1 )
+            m.dev_install( f_dir[0] )
         else:
             print('[ERROR] on_installed( INSTALL NOT EXIST )')
  
