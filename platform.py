@@ -21,7 +21,7 @@ class WiziotestPlatform(PlatformBase):
     def on_installed(self):
         print('[---] on_installed( + )')   
 
-        p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' )
+        p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace('\\\\', '/')
         print('[---] on_installed( %s )' % p)
         if exists( p ):
             print('[---] on_installed( EXIST )')
