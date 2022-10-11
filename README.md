@@ -1,2 +1,1 @@
-# wizio-TEST
-PlatformIO Experiments
+# PlatformIO Platform for Experiments
