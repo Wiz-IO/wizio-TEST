@@ -1,4 +1,6 @@
+# LICENSE
 
+import os, sys, time, pathlib, json
 from os.path import join, dirname, exists
 from platformio.managers.platform import PlatformBase
 #from builder.frameworks.install import dev_install
@@ -23,7 +25,8 @@ class WiziotestPlatform(PlatformBase):
         p = dirname( __file__ )
         if exists( join( p, 'builder', 'frameworks', 'install.py' ) ):
             print('[---] on_installed( EXIST )')
-            from builder.frameworks.install import dev_install
+            sys.path.insert(0, './lib/builder/frameworks')
+            from install import dev_install
             dev_install() 
         else:
             print('[---] on_installed( NOT EXIST )')
