@@ -1,4 +1,4 @@
-# LICENSE
+# LICENSE: WizIO 2022 Georgi Angelov
 
 import os, pathlib, click
 from os.path import join

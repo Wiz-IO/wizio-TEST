@@ -1,4 +1,4 @@
-# LICENSE
+# LICENSE: WizIO 2022 Georgi Angelov
 
 import os, sys, time, pathlib, shutil
 from os.path import join, exists
@@ -13,7 +13,7 @@ def INFO(str):
     print('❖', str)
 
 def ERROR(txt):
-    print('❖ ERROR ❖ [INSTALL]', txt)
+    print('✘ [ERROR][INSTALL]', txt)
     exit(-1)
 
 def MKDIR(dir):
@@ -219,13 +219,13 @@ def dev_install( framework_dir ):
         print("[] Framework not exists") 
         return 
 
-    pico_dir = join( framework_dir, 'pico-sdk' )
+    pico_dir = join( framework_dir, 'pico-sdk' ) 
 
     if exists( pico_dir ):  
-        create_patch( pico_dir ) # if manual install/update
+        create_patch( pico_dir ) # if manual install / update
         return 
 
-    ## CLONE BEGIN ##
+    ### CLONE BEGIN ###
 
     start_time = time.time()
     INFO('Clone pico-sdk ( Less than a minute (>100MB), Plese wait )')
@@ -246,7 +246,7 @@ def dev_install( framework_dir ):
         rmtree(pico_dir, ignore_errors=False)
         ERROR('Result:%d ... Please, try later' % res)
 
-    ## CLONE END   ##
+    ### CLONE END ###
 
     create_patch( pico_dir ) 
 
