@@ -1,1 +1,1 @@
-# PlatformIO Platform for Experiments
+# PlatformIO Platform for experiments
