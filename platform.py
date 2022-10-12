@@ -7,22 +7,32 @@ from platformio.managers.platform import PlatformBase
 F_NAME = 'framework-wizio-TEST'
 
 class WiziotestPlatform(PlatformBase):
+
     def is_embedded(self):
-        #print('[---] is_embedded()')
+        #print('[-=-] is_embedded')
         return True
 
     def get_boards(self, id_=None):
-        #print('[---] get_boards()')
+        #print('[-=-] get_boards')
         res = PlatformBase.get_boards(self, id_)
-        self.on_installed() # TODO: REMOVE THIS !!!
+        ### self.on_installed() # TODO: REMOVE THIS !!!
         return res
 
+    #def board_config(self, id_):
+    #def get_package_type(self, name):
+    #def configure_project_packages(self, env, targets=None):
+    #def configure_default_packages(self, options, targets):
+
     def get_package_type(self, name):
-        #print('[---] get_package_type()', name)
-        return self.packages[name].get('type')
+        #print('[-=-] get_package_type') # framework, toolchain...
+        T = self.packages[name].get('type')
+        if 'framework' == T:
+            #print('[-=-]\tPackage is framework')
+            self.on_installed()
+        return T
 
     def on_installed(self):  
-        #print('[---] on_installed()')   
+        #print('[-=-] on_installed( PLATFORM )')  
         p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace('\\', '/')
         if exists( p ):
             f_dir = join( self.config.get('platformio', 'core_dir'), 'packages', F_NAME ),
