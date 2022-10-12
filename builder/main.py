@@ -3,12 +3,12 @@
 from os.path import join
 from SCons.Script import (AlwaysBuild, DefaultEnvironment, Default)
 
-print('[---] main.py')
+#print('[---] main.py')
 
 env = DefaultEnvironment()
 
+elf = env.BuildProgram()
 '''
-elf = env.BuildProgram() # must stop here
 bin = env.ELF2BIN( join("$BUILD_DIR", "${PROGNAME}"), elf )
 prg = env.Alias( "buildprog", bin, [ env.VerboseAction("", "DONE") ] )
 AlwaysBuild( prg )
