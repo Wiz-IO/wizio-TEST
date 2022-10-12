@@ -7,7 +7,7 @@ from platformio.managers.platform import PlatformBase
 FRAMEWORK = 'framework-wizio-TEST'
 
 class WiziotestPlatform(PlatformBase):
-# ...platformio/penv/Lib/site-packages/platformio/platform/base.py
+    # .platformio/penv/Lib/site-packages/platformio/platform/base.py
 
     def is_embedded(self):
         #print('[===] is_embedded()')
