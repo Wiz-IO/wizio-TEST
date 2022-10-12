@@ -53,11 +53,11 @@ def dev_init_compiler(env, sdk_name = 'pico-sdk', application_name = 'APPLICATIO
     env.SDK_DIR  = env['SDK_DIR']  = join(env.framework_dir, env.sdk, 'src')  # folder path sdk src < ...platformio\packages\framework-NAME\pico-sdk\src >    
     env.INC_DIR  = env['INC_DIR']  = join(env.framework_dir, env.sdk, 'platformio', 'inc')
     env.BOOT_DIR = env['BOOT_DIR'] = join(env.framework_dir, env.sdk, 'platformio', 'boot')
-    if env.sdk.startswith('pico-sdk'):
+    if env.sdk.startswith( 'pico-sdk' ):
         env.sdk_linker_dir         = join(env.SDK_DIR, 'rp2_common', 'pico_standard_link') # SDK depend
         env.sdk_boot_stage2_dir    = join(env.SDK_DIR, 'rp2_common', 'boot_stage2')        # SDK depend
     else:
-        ERROR("NOT SUPPORTED SDK < %s >" % env.sdk)        
+        ERROR('NOT SUPPORTED SDK < %s >' % env.sdk)        
 
     env.cortex          = ['-march=armv6-m', '-mcpu=cortex-m0plus', '-mthumb']   
     env.heap            = env.GetProjectOption('custom_heap', '2048')
