@@ -3,13 +3,14 @@
 import os, sys, time, pathlib, shutil
 from os.path import join, exists
 from shutil import copyfile, rmtree
+from subprocess import Popen, PIPE
 from platformio import proc
 
 VER = '0.0.0'
 ver = {'PICO_SDK_VERSION_MAJOR':'0', 'PICO_SDK_VERSION_MINOR':'0', 'PICO_SDK_VERSION_REVISION':'0' }
 
 def INFO(str): 
-    print('[INSTALL]', str)
+    print('❖', str)
 
 def ERROR(txt):
     print('❖ ERROR ❖ [INSTALL]', txt)
@@ -50,6 +51,23 @@ def get_pico_sdk_version( pico_dir ):
     VER = '%s.%s.%s' % ( ver['PICO_SDK_VERSION_MAJOR'], ver['PICO_SDK_VERSION_MINOR'], ver['PICO_SDK_VERSION_REVISION'] ) 
     return VER     
 
+def get_git_hash( dir, short=True ):
+    res = ''
+    args = [ 'git', 'rev-parse', '--short' if short else '', 'HEAD' ] # git rev-parse --short HEAD
+    proc = Popen(args, stdout=PIPE, stderr=PIPE, cwd=dir)
+    out, err = proc.communicate()
+    if proc.returncode == 0:
+        res = str(out, 'utf-8').upper().replace('\n','') #b'2e6142b\n'
+    return res
+
+def get_from_file(filename): 
+    res = ''
+    if exists( filename ):  
+        f= open( filename, 'r' )
+        res = f.read(256)
+        f.close()
+    return res
+
 ###############################################################################
 
 def create_folder_gcc( platformio_dir ):
@@ -69,8 +87,9 @@ extern int __attribute__((weak)) _write(int handle, char *buffer, int length) { 
     )
     f.close()
 
-def create_folder_inc( pico_dir, platformio_dir ):
+def create_folder_inc( platformio_dir, pico_dir ):
     global VER
+    counter = 2
     pico_src_dir = join( pico_dir, 'src' )
     inc_dir = join( platformio_dir, 'inc' )
     if MKDIR( inc_dir ): return
@@ -86,11 +105,14 @@ def create_folder_inc( pico_dir, platformio_dir ):
                 dst_file = join(inc_dir, name, file)
                 if False == exists( dst_file ): 
                     copyfile( src_file, dst_file )
+                    counter += 1
                 else: 
                     ERROR('INCLUDE FILE EXISTS: %s' % dst_file)
-
-        f = open( join(platformio_dir, 'version'), 'w' )
-        f.write(VER)
+    INFO('Updated %d files' % counter)
+    HASH = get_git_hash( pico_dir )
+    if HASH != '': #  write HASH for updates
+        f = open( join(platformio_dir, 'HASH'), 'w' )
+        f.write(HASH)
         f.close()
 
 ###############################################################################
@@ -138,31 +160,63 @@ def create_version( pico_dir ):
 
 ###############################################################################
 
-def create_patch( pico_dir ):
-    get_pico_sdk_version( pico_dir )
+def check_updates( platformio_dir, pico_dir ):
+    def RMPIO( platformio_dir ):
+        INFO('Updating current config for PICO-SDK %s' % VER)
+        shutil.rmtree(platformio_dir, ignore_errors=False)
+        time.sleep(1)
 
+    gcc_dir = join(platformio_dir, 'gcc')
+    inc_dir = join(platformio_dir, 'inc')
+    h_file  = join(platformio_dir, 'HASH')    
+
+    if not exists( pico_dir ):
+        #print("[] pico-sdk not exists")
+        return -1 # clone      
+    elif not exists( platformio_dir ):
+        #print("[] platformio_dir not exists")
+        return -2 # create     
+    elif not exists( gcc_dir ):
+        #print("[] gcc_dir not exists")
+        RMPIO( platformio_dir )
+        return -3
+    elif not exists( inc_dir ):
+        #print("[] inc_dir not exists")
+        RMPIO( platformio_dir )
+        return -4
+    elif not exists( h_file ):
+        #print("[] h_file not exists")
+        RMPIO( platformio_dir )                
+        return -5
+
+    p_hash = get_git_hash( pico_dir )
+    i_hash = get_from_file( h_file  )  
+    print("PICO-SDK: %s ( %s )" % (VER, p_hash)) # ✔ 
+    if p_hash != i_hash:
+        RMPIO( platformio_dir )
+        return 0 # wrong hashes
+    return 1 # ok
+
+def create_patch( pico_dir ):
     platformio_dir = join( pico_dir, 'platformio' )
 
-    version_file = join(platformio_dir, 'version') 
-    if exists( version_file ): 
-        f = open( version_file, 'r' ); v = f.read(); f.close();
-        if v != VER:
-            print('Update current version < %s > to < %s >' % (v, VER) )
-            shutil.rmtree(platformio_dir, ignore_errors=False)
-            time.sleep(1)
+    get_pico_sdk_version( pico_dir )
+
+    if 1 == check_updates( platformio_dir, pico_dir ): return
 
     MKDIR( platformio_dir )  
 
-    create_config_autogen(pico_dir)   
-    create_version(pico_dir)    
+    create_config_autogen( pico_dir )   
+    create_version( pico_dir )    
 
-    create_folder_gcc(platformio_dir) 
-    create_folder_inc(pico_dir, platformio_dir)  
+    create_folder_gcc( platformio_dir ) 
+    create_folder_inc( platformio_dir, pico_dir )  
 
 def dev_install( framework_dir ):
     global VER    
 
-    if not exists( framework_dir ):  
+    if not exists( framework_dir ): 
+        print("[] Framework not exists") 
         return 
 
     pico_dir = join( framework_dir, 'pico-sdk' )
@@ -174,7 +228,7 @@ def dev_install( framework_dir ):
     ## CLONE BEGIN ##
 
     start_time = time.time()
-    INFO('Clone pico-sdk ( less than a minute, Plese wait )')
+    INFO('Clone pico-sdk ( Less than a minute (>100MB), Plese wait )')
     args = [ 'git', 'clone', 'https://github.com/raspberrypi/pico-sdk', pico_dir, '--quiet' ]
     res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin )
     
@@ -185,7 +239,7 @@ def dev_install( framework_dir ):
 
         if 0 == res['returncode']: 
             INFO('Updating submodules ...')
-            args = ['git', 'submodule', 'update', pico_dir, '--quiet' ]
+            args = ['git', 'submodule', 'update', '--quiet', pico_dir ]
             res = proc.exec_command( args, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd = pico_dir )
            
     if 0 != res['returncode']:  

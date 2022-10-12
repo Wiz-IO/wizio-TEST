@@ -3,8 +3,6 @@
 from os.path import dirname
 from SCons.Script import DefaultEnvironment
 
-print('[---] pico-sdk.py')
-
 env = DefaultEnvironment()
 env.platform = 'pico-sdk'
 env["PLATFORM_DIR"] = env.platform_dir = dirname( env["PLATFORM_MANIFEST"] )
