@@ -1,4 +1,4 @@
-# LICENSE
+# LICENSE: WizIO 2022 Georgi Angelov
 
 from os.path import join
 from SCons.Script import (AlwaysBuild, DefaultEnvironment, Default)
