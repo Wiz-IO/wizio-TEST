@@ -16,9 +16,9 @@
     "http://dl.platformio.org/packages/manifest.json"
   ],
   "frameworks": {  
-      "cmake": {
+      "pico-cmake": {
         "package": "framework-wizio-TEST",
-        "script": "builder/frameworks/cmake.py"
+        "script": "builder/frameworks/pico-cmake.py"
       },      
       "pico-sdk": {
         "package": "framework-wizio-TEST",
