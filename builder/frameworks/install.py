@@ -1,5 +1,6 @@
 # LICENSE: WizIO 2022 Georgi Angelov
 
+from distutils.debug import DEBUG
 import os, sys, time, pathlib, shutil
 from os.path import join, exists
 from shutil import copyfile, rmtree
@@ -202,14 +203,25 @@ def create_patch( pico_dir ):
     create_folder_inc( platformio_dir, pico_dir )  
 
 def dev_install( framework_dir ):
-    global VER    
+    global VER   
+
+    def get_framework_dir(e):
+        if 'SConsEnvironment' not in str( type(e) ): 
+            ERROR('SConsEnvironment')
+        return e.PioPlatform().get_package_dir('framework-wizio-TEST')
+
+    if type(framework_dir) != str: 
+        framework_dir = get_framework_dir(framework_dir)
+
     if not exists( framework_dir ): 
         print('[WARNING] Framework not exists') 
         return 
+
     pico_dir = join( framework_dir, 'pico-sdk' ) 
     if exists( pico_dir ):  
         create_patch( pico_dir ) # if manual install / update
         return 
+
     ### CLONE BEGIN ###
     start_time = time.time()
     INFO('Clone pico-sdk ( Less than a minute (>100MB), Plese wait )')
@@ -227,6 +239,7 @@ def dev_install( framework_dir ):
         rmtree(pico_dir, ignore_errors=False)
         ERROR('Result:%d ... Please, try later' % res)
     ### CLONE END ###
+
     create_patch( pico_dir ) 
     INFO('PICO-SDK Version: %s' % VER )
     INFO('DONE ( %s sec )' % int( time.time() - start_time ) ) # 24 sec

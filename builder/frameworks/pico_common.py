@@ -1,8 +1,10 @@
 # LICENSE: WizIO 2022 Georgi Angelov
 
 import os, click
-from os.path import join
+from os.path import join, dirname
 from shutil import copyfile
+
+FRAMEWORK_NAME = 'framework-wizio-TEST'
 
 TXT_BC = '( binary type config )'
 TXT_UC = '( user config )'
@@ -20,6 +22,7 @@ def ERROR(txt):
     exit(-1)
 
 def dev_init_template(env):
+    if env.platform == 'arduino': return
     src_dir = join( env.subst('$PROJECT_DIR'), 'src' )
     tmp_dir = join( env.platform_dir, 'templates', env.sdk )
     for root, void, files in os.walk( src_dir ):
@@ -31,6 +34,12 @@ def dev_init_template(env):
     copyfile( join(tmp_dir, 'main.c'), join(src_dir, 'project_main.c') )
 
 def dev_init_compiler(env, sdk_name = 'pico-sdk', application_name = 'APPLICATION'):
+    env['FRAMEWORK_DIR'] = env.framework_dir = env.PioPlatform().get_package_dir( FRAMEWORK_NAME ) 
+    env['PLATFORM_DIR' ] = env.platform_dir  = dirname( env['PLATFORM_MANIFEST'] ) 
+    env['SDK_DIR'      ] = env.SDK_DIR       = join(env.framework_dir, sdk_name, 'src')   
+    env['INC_DIR'      ] = env.INC_DIR       = join(env.framework_dir, sdk_name, 'platformio', 'inc')
+    env['BOOT_DIR'     ] = env.BOOT_DIR      = join(env.framework_dir, sdk_name, 'platformio', 'boot')
+
     env.Replace( 
         BUILD_DIR = env.subst('$BUILD_DIR').replace('\\\\', '/'),           # TODO check replace
         AR='arm-none-eabi-ar',
@@ -49,16 +58,12 @@ def dev_init_compiler(env, sdk_name = 'pico-sdk', application_name = 'APPLICATIO
         PROGSUFFIX='.elf',
         PROGNAME = application_name 
     )
-    env.sdk      = env.GetProjectOption('custom_sdk', sdk_name)               # folder name: < pico-sdk >
-    env.SDK_DIR  = env['SDK_DIR']  = join(env.framework_dir, env.sdk, 'src')  # folder path sdk src < ...platformio\packages\framework-NAME\pico-sdk\src >    
-    env.INC_DIR  = env['INC_DIR']  = join(env.framework_dir, env.sdk, 'platformio', 'inc')
-    env.BOOT_DIR = env['BOOT_DIR'] = join(env.framework_dir, env.sdk, 'platformio', 'boot')
-    if env.sdk.startswith( 'pico-sdk' ):
-        env.sdk_linker_dir         = join(env.SDK_DIR, 'rp2_common', 'pico_standard_link') # SDK depend
-        env.sdk_boot_stage2_dir    = join(env.SDK_DIR, 'rp2_common', 'boot_stage2')        # SDK depend
-    else:
-        ERROR('NOT SUPPORTED SDK < %s >' % env.sdk)        
 
+    env.sdk = env.GetProjectOption('custom_sdk', sdk_name)               
+
+    env.sdk_linker_dir      = join(env.SDK_DIR, 'rp2_common', 'pico_standard_link') # SDK depend
+    env.sdk_boot_stage2_dir = join(env.SDK_DIR, 'rp2_common', 'boot_stage2')        # SDK depend
+       
     env.cortex          = ['-march=armv6-m', '-mcpu=cortex-m0plus', '-mthumb']   
     env.heap            = env.GetProjectOption('custom_heap', '2048')
     INFO('HEAP          : %s' % (env.heap))

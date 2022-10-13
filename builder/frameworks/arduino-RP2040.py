@@ -4,12 +4,9 @@ from install import dev_install
 from pico_common import DEBUG, ERROR, dev_init_template, dev_init_compiler, dev_init_variables, dev_init_modules
 
 def dev_init(env):
-    DEBUG('pico-sdk test')   
+    DEBUG('Arduino test')   
 
     dev_install(env)
     dev_init_compiler(env)    
-    dev_init_template(env)
-    dev_init_variables(env)
-    dev_init_modules(env)
 
     ERROR('The beer got hot !')

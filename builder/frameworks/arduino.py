@@ -3,7 +3,7 @@
 from SCons.Script import DefaultEnvironment
 
 env = DefaultEnvironment()
-env.platform = 'pico-sdk'                                     # platform separating
+env.platform = 'arduino'                                      # platform separating
 md = env.platform + '-' + env.BoardConfig().get('build.core') # chip     separating
 __import__(md).dev_init(env)
 
