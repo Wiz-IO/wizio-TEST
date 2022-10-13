@@ -2,7 +2,7 @@
   "name": "WizIO - TEST Board",
   "url": "https://github.com/Wiz-IO",
   "vendor": "WizIO",  
-  "frameworks": [ "pico-sdk", "arduino" ],
+  "frameworks": [ "pico-cmake", "pico-sdk", "arduino" ],
 
   "build": {
     "core"          : "RP2040",
