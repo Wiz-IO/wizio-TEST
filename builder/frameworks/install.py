@@ -194,8 +194,11 @@ def check_updates( platformio_dir, pico_dir ):
         return 0 # wrong hashes
     return 1 # ok
 
-def create_patch( pico_dir ):
+def create_patch( pico_dir, framework_dir='' ):
     platformio_dir = join( pico_dir, 'platformio' )
+    if '' != framework_dir:
+        platformio_dir = join( framework_dir, 'platformio' ) # use this, pico-sdk is intact
+
     get_pico_sdk_version( pico_dir )
     if 1 == check_updates( platformio_dir, pico_dir ): return
     MKDIR( platformio_dir )  
@@ -212,8 +215,8 @@ def dev_install( framework_dir ):
             ERROR('SConsEnvironment')
         return e.PioPlatform().get_package_dir('framework-wizio-TEST')
 
-    if type(framework_dir) != str: 
-        framework_dir = get_framework_dir(framework_dir)
+    if type(framework_dir) != str: # framework_dir can be STR or ENV
+        framework_dir = get_framework_dir(framework_dir) # get dir from ENV
 
     if not exists( framework_dir ): 
         print('[WARNING] Framework not exists') 
@@ -221,7 +224,7 @@ def dev_install( framework_dir ):
 
     pico_dir = join( framework_dir, 'pico-sdk' ) 
     if exists( pico_dir ):  
-        create_patch( pico_dir ) # if manual install / update
+        create_patch( pico_dir, framework_dir ) # if manual install / update
         return 
 
     ### CLONE BEGIN ### TODO: clone other
@@ -242,6 +245,6 @@ def dev_install( framework_dir ):
         ERROR('Result:%d ... Please, try later' % res)
     ### CLONE END ###
 
-    create_patch( pico_dir ) 
+    create_patch( pico_dir, framework_dir ) 
     INFO('PICO-SDK Version: %s' % VER )
     INFO('DONE ( %s sec )' % int( time.time() - start_time ) ) # 24 sec
