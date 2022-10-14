@@ -42,12 +42,12 @@
     },
 
     "tool-cmake": {
-      "optional": true,
+      "Xoptional": true,
       "owner": "platformio",
       "version": "~3.16.0"
     },
     "tool-ninja": {
-      "optional": true,
+      "Xoptional": true,
       "owner": "platformio",
       "version": "^1.7.0"
     }    

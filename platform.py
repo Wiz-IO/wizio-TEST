@@ -25,10 +25,10 @@ class WiziotestPlatform(PlatformBase):
     def on_installed(self):  
         p = join( dirname( __file__ ), 'builder', 'frameworks', 'install.py' ).replace('\\', '/')
         if exists( p ):
-            f_dir = join( self.config.get('platformio', 'core_dir'), 'packages', FRAMEWORK_NAME ),
+            f_dir = join( self.config.get('platformio', 'core_dir'), 'packages', FRAMEWORK_NAME )
             name = 'module_' +  str( abs( hash( p ) ) )
             m = SourceFileLoader(name, p).load_module() 
-            m.dev_install( f_dir[0] )
+            m.dev_install( f_dir )
         else:
             print('[ERROR] on_installed( INSTALL NOT EXIST )')
  
