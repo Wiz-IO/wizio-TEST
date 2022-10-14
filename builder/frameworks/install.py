@@ -33,7 +33,7 @@ def MKDIR(dir):
 
 ###############################################################################
 
-def get_ver(item, key):
+def get_ver(item, key): #TODO: optimise
     if key in item: 
         x = item.find(' ')
         y = item.find(')')
@@ -73,7 +73,7 @@ def get_from_file(filename):
 
 ###############################################################################
 
-def create_folder_gcc( platformio_dir ):
+def create_folder_gcc( platformio_dir ): #TODO: Why?
     gcc_dir = join( platformio_dir, 'gcc' )
     if MKDIR( gcc_dir ): return
     f = open( join( gcc_dir, 'gcc-syscall.c' ), 'w' )
@@ -120,18 +120,20 @@ def create_folder_inc( platformio_dir, pico_dir ):
 
 ###############################################################################
 
-# TODO check dst folder
 def create_config_autogen( pico_dir ):
+#TODO: project / include    
     filename = join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'config_autogen.h' )
     if not exists( filename ): 
-        f = open( filename, 'w' ) 
+        f = open( filename, 'w' )   
         f.write('// config autogen: PlatformIO')
+#include ".../pico-sdk/src/boards/include/boards/pico.h" <------ board select
+#include ".../pico-sdk/src/rp2_common/cmsis/include/cmsis/rename_exceptions.h"           
         f.close()
 
-# TODO check dst folder
 def create_version( pico_dir ):
     global VER
-    filename = join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'version.h')
+#TODO: check dst folder ... for now is ok
+    filename = join( pico_dir, 'src', 'rp2_common', 'pico_platform', 'include', 'pico', 'version.h') 
     if not exists( filename ): 
         f = open( filename, 'w' ) 
         f.write(
@@ -222,7 +224,7 @@ def dev_install( framework_dir ):
         create_patch( pico_dir ) # if manual install / update
         return 
 
-    ### CLONE BEGIN ###
+    ### CLONE BEGIN ### TODO: clone other
     start_time = time.time()
     INFO('Clone pico-sdk ( Less than a minute (>100MB), Plese wait )')
     args = [ 'git', 'clone', 'https://github.com/raspberrypi/pico-sdk', pico_dir, '--quiet' ]

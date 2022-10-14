@@ -1,26 +1,47 @@
 # LICENSE: WizIO 2022 Georgi Angelov
 
-import os
+#TODO: THE BUILDER IS NOT COMPLETE. !?!
+
+import sys
+from os.path import join
 from install import dev_install
-from pico_common import INFO, DEBUG, ERROR, dev_init_compiler
+from pico_common import INFO, DEBUG, ERROR
 from SCons.Script import DefaultEnvironment
+from platformio import proc
 
 env = DefaultEnvironment()
-env.platform = 'pico-cmake' # platform separating
+INFO('CMAKE %s' % env.subst('$PROGNAME') )
+dev_install(env)
+
+#TODO: Copy pico_sdk_import.cmake to project
 
 platform = env.PioPlatform()
-print('platform', platform)
 
-cmake = os.path.join(platform.get_package_dir("tool-cmake"), "bin")
-print('cmake', cmake)
+PICO_SDK_PATH = join(platform.get_package_dir('framework-wizio-TEST'), 'pico-sdk')
+PROJECT_DIR = env.subst( join('$PROJECT_DIR', 'src') )
+BUILD_DIR = env.subst('$BUILD_DIR')
+
+cmake = platform.get_package_dir("tool-cmake")
+env['ENV']['PATH'] += ';' + join(cmake, 'bin')
 
 ninja = platform.get_package_dir("tool-ninja")
-print('ninja', ninja)
+env['ENV']['PATH'] += ';' + ninja
 
+cmd = [
+    'cmake', #'--help',
+    '-DPICO_SDK_PATH=%s' % PICO_SDK_PATH, 
+    '-DCMAKE_PROJECT_NAME=%s' % env.subst('$PROGNAME'),
+    '-DCMAKE_BUILD_TYPE=Release',
+    '-DPICO_TOOLCHAIN_PATH=%s' % join( platform.get_package_dir("toolchain-gccarmnoneeabi"), 'bin'),   
+    '-G', 'Ninja',
+    '-S', PROJECT_DIR,
+    '-B', BUILD_DIR,
+]
+res = proc.exec_command( cmd, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin )
+if 0 == res['returncode']:
+    cmd = ['ninja']
+    res = proc.exec_command( cmd, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, cwd=BUILD_DIR )
+    #print(res)
 
-DEBUG('CMAKE test')   
-
-dev_install(env)
-dev_init_compiler(env)    
-
-ERROR('The beer got hot !')
+INFO('DONE ? ( TODO )')
+exit(0)

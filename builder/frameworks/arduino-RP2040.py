@@ -7,6 +7,6 @@ def dev_init(env):
     DEBUG('Arduino test')   
 
     dev_install(env)
-    dev_init_compiler(env)    
+    dev_init_compiler(env)   
 
-    ERROR('The beer got hot !')
+    ERROR('The beer got hot ! ( TODO )')

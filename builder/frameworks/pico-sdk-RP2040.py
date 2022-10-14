@@ -12,4 +12,4 @@ def dev_init(env):
     dev_init_variables(env)
     dev_init_modules(env)
 
-    ERROR('The beer got hot !')
+    ERROR('The beer got hot ! ( TODO )')
